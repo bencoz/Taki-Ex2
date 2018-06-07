@@ -1,28 +1,14 @@
+@import url(https://fonts.googleapis.com/css?family=Luckiest+Guy);
+
 html {
   height: 100%;
-}
-
-@font-face{
-  font-family: gameFont;
-  src: url("/fonts/Luckiest_Guy/LuckiestGuy-Regular.ttf");
+  	font-family:Luckiest Guy;
 }
 
 body {
 	background: #5635BB;
-	font-family: 'Gloria Hallelujah', cursive;
-	font-size: 16px;
-}
-header {
-  background: #5635BB;
-  width:260px;
-  height:100px;
-  display: flex;
-  flex-direction: row;
-  align-content:center;
-}
-header img{
-  width:260px;
-  height:100px;
+
+	font-size: 1.5em;
 }
 
 .game-container {
@@ -36,23 +22,30 @@ header img{
 }
 
 .playing-objects-container {
+  background-color:  rgb(84, 139, 223);
   width: 100%;
   display: flex;
   justify-content: center;
 }
 
 .player-cards-container {
+  background-color:  rgb(84, 139, 223);
   width: 100%;
   display: flex;
   justify-content: center;
   clear:both;
+  min-height: 100px;
+  max-height: 100px;
+  align-items: center;
+}
+.player-cards-container#playerContainer1{
+  padding-bottom: 13px;
 }
 
 .card {
   background-image: url(..\\public\\images\\cards\\card_back.png);
   height: 90px;
   width: 56px;
-  margin: -6px;
   background-size: cover;
   background-repeat: no-repeat;
   border-radius: 5px;
@@ -70,6 +63,10 @@ ul.players-cards {
   list-style-type: none;
   background-repeat: no-repeat;
   display: flex;
+}
+
+ul.players-cards .card{
+  margin: -6px;
 }
 
 #playerContainer1 .card {
@@ -94,17 +91,29 @@ ul.players-cards {
 }
 
 #deck {
+  margin-top: 10px;
   height: 150px;
   width: 130px;
 }
 
 .container {
+  text-align: center;
+  width: 100%;
   display: flex;
-  flex-direction: row;
-	justify-content: center;
-  align-items: center;
+  justify-content: center;
   align-content: center;
-	flex-direction: column;
+  flex-direction: row;
+}
+
+.container img {
+  margin-left: auto;
+  margin-right: auto;
+  width: 100px;
+  height: 80px;
+}
+
+#takiImg {
+  width: 260px;
 }
 
 .playing-objects-container {
@@ -113,31 +122,19 @@ ul.players-cards {
   align-items: center;
   justify-content: center;
   position:relative;
-  height:325px;
+  height: auto;
   width:100%;
 }
-#currentPlayerImg {
-  margin-right: 300px;
-  width: 200px;
-  height: 200px;
-  /*display: flex;
-  flex-direction: column;
-  flex-grow: 2;
-  flex-shrink: 1;
-  position: relative;
-  width:200px;
-  height:200px;*/
-}
-#currentPlayerImg img{
-  margin-right: 300px;
-  width: 200px;
-  height: 200px;
-}
 
+#currentPlayerImg img{
+  width: 154px;
+  height: 154px;
+  margin-top: 20px;
+}
 
 #topBar {
   z-index: 200;
-  height: 150px;
+  height: 100px;
   background-color: rgb(70, 25, 194);
   width: 100%;
   position: relative;
@@ -147,23 +144,64 @@ ul.players-cards {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: 1.1em;
   color: #ffffff;
-  font-family:gameFont;
+  font-family:Luckiest Guy;
 }
 
-#topBar::after {
-  display: inline-block;
-  position: absolute;
-  top: 100%;
-  content: '';
-  height: 30%;
-  width: 100%;
-
+@media screen and (max-width: 900px) {
+  .statItem {
+    font-size: 0.75em;
+  }
+  #currentPlayerImg img{
+    margin-right: 200px;
+  }
+  #endTurn-button {
+    padding: 5px 5px;
+    right: 87%;
+  }
+  #endReplay-button {
+    padding: 5px 5px;
+    right: 87%;
+  }
 }
+
+@media screen and (min-width: 900px) and (max-width: 1024px){
+  .statItem {
+    font-size: 1.15em;
+  }
+  #currentPlayerImg img{
+    margin-right: 300px;
+  }
+  #endTurn-button {
+    padding: 5px 5px !important;
+    right: 85%;
+  }
+  #endReplay-button {
+    padding: 10px 15px !important;
+    right: 85%;
+  }
+}
+
+@media screen and (min-width: 1024px) {
+  .statItem {
+    font-size: 1.15em;
+  }
+  #currentPlayerImg img{
+    margin-right: 300px;
+  }
+  #endTurn-button {
+    padding: 10px 15px !important;
+    right: 80%;
+  }
+  #endReplay-button {
+    padding: 10px 15px !important;
+    right: 80%;
+  }
+}
+
 .statItem{
   display: flex;
-  font-size: 1.5em;
+  /*font-size: 1.5em;*/
   flex-direction: column;
   justify-content: center;
   align-items: center;
@@ -174,7 +212,7 @@ ul.players-cards {
 }
 .topBarItemFirstRow {
   display: flex;
-  font-size: 1.5em;
+  /*font-size: 1.5em;*/
   flex-direction: column;
   justify-content: center;
   align-items: center;
@@ -189,10 +227,23 @@ ul.players-cards {
   justify-content: center;
   align-items: center;
   position: relative;
-
 }
-
-#start-button{
+#replay-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+ #replay-number{
+      padding: 20px;
+         color: white;
+             font-size: 30px;
+ }
+.replay-img {
+    width: 45px;
+}
+/*#start-button{
   position: inherit;
   right: 350px;
 }
@@ -200,7 +251,8 @@ ul.players-cards {
 #quit-button{
   position: inherit;
   left: 350px;
-}
+}*/
+
 #popupContainer{
   display: none; /* Hidden by default */
   position: fixed; /* Stay in place */
@@ -227,7 +279,7 @@ ul.players-cards {
     min-height: 400px;
     max-height:400px;
     border-radius:20px;
-    font-family:gameFont;
+    font-family:Luckiest Guy;
 }
  #red-button{
     display: inline-block;
@@ -248,7 +300,7 @@ ul.players-cards {
     top:22.7%;
 
  }
-  #yellow-button{
+  #yellow-button {
     display: inline-block;
     width:50%;
     height:40%;
@@ -258,7 +310,8 @@ ul.players-cards {
     top:60.0%;
     border-radius:0 0 0 8px;
  }
-  #blue-button{
+
+ #blue-button {
     content: "";
     display: inline-block;
     width:50%;
@@ -269,6 +322,7 @@ ul.players-cards {
     top:60.0%;
     border-radius:0 0 8px 0;
  }
+
  #endTurn-button {
    background-color: rgb(131, 220, 247);
     color: black;
@@ -280,14 +334,33 @@ ul.players-cards {
     display: none;
     font-size: 24px;
     position: absolute;
-    left: 60%;
-    top: 80%;
-    font-family: gameFont;
+    font-family: Luckiest Guy;
 }
+
  #endTurn-button:hover {
     background-color: rgba(1, 29, 119, 0.781); /* Green */
     color: white;
-    font-family :gameFont;
+    font-family :Luckiest Guy;
+}
+
+#endReplay-button {
+  background-color: rgb(131, 220, 247);
+   color: black;
+   border: 3px solid rgb(195, 235, 241);
+   border-radius: 15px;
+   padding: 10px 15px;
+   text-align: center;
+   text-decoration: none;
+   display: none;
+   font-size: 24px;
+   position: absolute;
+   font-family: Luckiest Guy;
+}
+
+#endReplay-button:hover {
+   background-color: rgba(1, 29, 119, 0.781); /* Green */
+   color: white;
+   font-family :Luckiest Guy;
 }
 #scorePopup{
   left: 30%;
@@ -297,7 +370,14 @@ ul.players-cards {
   z-index: 500;
   top: 15%;
 }
-.gridHeader{grid-area: scoreHeader ;}
+
+.gridHeader{
+  grid-area: scoreHeader;
+  justify-content: center;
+  align-content: center;
+  flex-direction: row;
+  text-align: center;
+}
 .item1 { grid-area: categories; font-size: 40px;}
 .item2 { grid-area: player1title; font-size: 40px;}
 .item3 { grid-area: player2title; font-size: 40px; }
@@ -305,6 +385,14 @@ ul.players-cards {
 .item5 { grid-area: player1score; }
 .item6 { grid-area: player2score; }
 
+.gridHeader #newGameButton{
+  padding-right: 10px;
+  padding-top: 5px;
+}
+.gridHeader #replayButton{
+  padding-left: 10px;
+  padding-top: 5px;
+}
 .grid-container {
   display: grid;
   grid-template: 'scoreHeader scoreHeader scoreHeader scoreHeader scoreHeader'
@@ -314,11 +402,11 @@ ul.players-cards {
   'categoriesTxt player1score player1score player2score player2score' ;
   grid-template-rows: 100px 50px;
   grid-gap: 10px;
-    background-color: rgb(29, 210, 126);
+  background-color: rgb(29, 210, 126);
   padding: 10px;
-  width:40%;
+  width:50%;
   height:10%;
-  font-family: gameFont;
+  font-family: Luckiest Guy;
 }
 .grid-container>div {
   background-color: rgba(255, 255, 255, 0.8);
@@ -329,11 +417,14 @@ ul.players-cards {
 #scorePopupImg{
   position: relative;
   display: inline;
+     width: 90px;
+    top: 149%;
 
 }
 #score-popup-header{
-  display: inline-block;
-  font-family: gameFont;
+  display: inline-flex;
+  font-family: Luckiest Guy;
+font-size: 100%;
 }
 #winning-popup-text{
   display: inline-block;
@@ -343,11 +434,51 @@ ul.players-cards {
 #winning-popup-img{
   display: inline-block;
   position: relative;
-  width: 10%;
+  
+  padding: 10px;
+    width: 90px;
+    bottom: 100%;
 }
 #score-first-row{
   font-size: 30px
 }
 .item4 {
   font-size: 10px;
+}
+
+.button-NewGame {
+    display: inline-block;
+    text-align: center;
+    vertical-align: middle;
+    padding: 4px 4px 4px 4px;
+    border: 0px solid #2731a1;
+    border-radius: 8px;
+    background: #4a7dff;
+    background: -webkit-gradient(linear, left top, left bottom, from(#4a7dff), to(#2d44b5));
+    background: -moz-linear-gradient(top, #4a7dff, #2d44b5);
+    background: linear-gradient(to bottom, #4a7dff, #2d44b5);
+    text-shadow: #591717 1px 1px 1px;
+    font: normal normal bold 30%;
+    color: #ffffff;
+    text-decoration: none;
+      font-family: Luckiest Guy;
+          font-size: 100%;
+    margin: 1%;
+
+}
+.button-NewGame:hover,
+.button-NewGame:focus {
+    border: 0px solid #3e4eff;
+    background: #5996ff;
+    background: -webkit-gradient(linear, left top, left bottom, from(#5996ff), to(#3652d9));
+    background: -moz-linear-gradient(top, #5996ff, #3652d9);
+    background: linear-gradient(to bottom, #5996ff, #3652d9);
+    color: #ffffff;
+    text-decoration: none;
+}
+.button-NewGame:active {
+    background: #2c4b99;
+    background: -webkit-gradient(linear, left top, left bottom, from(#2c4b99), to(#2d44b5));
+    background: -moz-linear-gradient(top, #2c4b99, #2d44b5);
+    background: linear-gradient(to bottom, #2c4b99, #2d44b5);
 }

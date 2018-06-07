@@ -2,6 +2,7 @@ import React from "react";
 
 import Player from "./Player.js";
 import Computer from "./Computer.js";
+import Card from "./Card.js";
 import Deck from "./Deck.js";
 import Board from "./Board.js";
 import Logic from './Logic.js';
@@ -14,24 +15,35 @@ export default class App extends React.Component {
         this.logic = new Logic();
         this.cardsToTake = 1;
         this.turnsToMove = 1;
-
+        this.needReset = false;
+        this.isStarted = false;
+        this.gameEnd = false;
+        this.resetTimer = false;
+        this.history=[];
+      
         this.state = {
             numOfPlayers: 1,
             numOfBots: 1,
             numOfPlayerCards: 8,
             startTurnTime: 0,
-            takiMode: false, 
+            takiMode: false,
+            takiModeColor: "none",
             activeFilter :false ,
             cardColorFilter: null,
-            needReset :false,
             gamePaused: false,
             Players: [],
             currentPlayerIDTurn:1,
             deck: null,
             pileOfCards: [],
             colorPopupDisplay: "none",
+            colorPopupContainerDisplay: "none",
             scoreBoardDisplay: "none",
-            endTurnButton: "none"
+            scorePopupContainerDisplay: "none",
+            winnerId: null,
+            endTurnButton: "none",
+
+            replayDisplay: "none",
+            turnToDisplay :0
         };
     }
 
@@ -53,8 +65,54 @@ export default class App extends React.Component {
     }
 
     startGame(){
-        this.dealFirstCards();
-        this.drawFirstCard();
+        if (!this.isStarted){
+            this.dealFirstCards();
+            this.drawFirstCard();
+            this.isStarted = true;
+            this.gameEnd = false;
+            this.resetTimer = false;
+            this.history.push(this.copyState());
+        }
+    }
+
+    emptyPileResetAndReturnToDeck(){
+        var newPile = [];
+        var card = this.state.pileOfCards.getLast();
+        newPile.push(card);
+        var cards = this.state.pileOfCards;
+        this.setState({pileOfCards: newPile});
+        this.resetPileCards(cards);
+        return cards;
+    }
+
+    resetPileCards(cards){
+        var numOfGreen, numOfYellow, numOfBlue, numOfRed, numOfColorful;
+        numOfGreen = numOfYellow = numOfBlue = numOfRed = numOfColorful = 2;
+        
+        for (var i = 0; i < cards.length; i++){
+            if (cards[i].name == 'changecolor'){
+                cards[i].color = 'colorful';
+            }
+			cards[i].isActive = true;
+            if (cards[i].name == 'taki'){
+                if (numOfBlue > 0){
+                    cards[i].color == 'blue';
+                    numOfBlue--;
+                } else if (numOfGreen > 0){
+                    cards[i].color == 'green';
+                    numOfGreen--;
+                } else if (numOfRed > 0){
+                    cards[i].color == 'red';
+                    numOfRed--;
+                } else if (numOfYellow > 0){
+                    cards[i].color == 'yellow';
+                    numOfYellow--;
+                }else if (numOfColorful > 0){
+                    cards[i].color == 'colorful';
+                    numOfColorful--;
+                }
+            }
+        }
     }
 
     drawFirstCard(){
@@ -68,7 +126,6 @@ export default class App extends React.Component {
         let pile = this.state.pileOfCards;
         pile.push(card);
         //TODO:: MAKE THE FUNCTION BELLOW WORK IN REACT
-        //this.UI.addCardToPile(card);
         this.setState({
             startTurnTime: Date.now(),
             pileOfCards: pile
@@ -80,7 +137,49 @@ export default class App extends React.Component {
     }
 
     setDeckCallBack(deck) {
-        //deck.setCardsRetrive(this.emptyPileResetAndReturnToDeck.bind(this));
+        deck.setCardsRetrive(this.emptyPileResetAndReturnToDeck.bind(this));
+    }
+
+    resetGame(){
+        let cards = []
+        let newPlayers = [];
+        for (var i = 0; i < this.state.Players.length; i++){
+            let player = this.state.Players[i];
+            let playerCards = player.removeAllCards();
+            let len = playerCards.length;
+            for (var j = 0; j < len; j++){
+                cards.push(playerCards.pop());
+            }
+            player.resetStats();
+            newPlayers.push(player);
+        }
+    
+        var pileCards = this.state.pileOfCards;
+        this.resetPileCards(pileCards);
+        let len = pileCards.length;
+        for (var i = 0; i < len; i++){
+            cards.push(pileCards.pop());
+        }
+        let newDeck = this.state.deck;
+        newDeck.fillDeck(cards)
+        this.isStarted = false;
+        this.resetTimer = true;
+        this.history = [];
+        let newState = {
+            Players: newPlayers,
+            pileOfCards: [],
+            scoreBoardDisplay: "none",
+            scorePopupContainerDisplay: "none",
+            gamePaused: false,
+            currentPlayerIDTurn: 1,
+            deck: newDeck,
+        }
+        return newState;
+    }
+
+    resetAndStartNewGame(){
+        let newState = this.resetGame();
+        this.setState(newState, this.startGame.bind(this))
     }
 
     setPlayers() {
@@ -108,11 +207,11 @@ export default class App extends React.Component {
     }
 
     checkIfGameWasPaused(event){
-        if (this.gamePaused){
+        if (this.state.gamePaused){
             return true;
         } else if (event){
-            if (event.currentTarget){
-                if (event.currentTarget.id == 'colorPopup'){
+            if (event.target){
+                if (event.target.id == 'colorPopup'){
                     return true;
                 }
             } else{
@@ -124,28 +223,32 @@ export default class App extends React.Component {
     }
 
     onTakeCard(event){
+        if (!this.isStarted){
+            return;
+        }
         if (this.checkIfGameWasPaused(event)){
             return;
         }
         let playerId = this.state.currentPlayerIDTurn;
         let players = this.state.Players;
         if(this.isPlayerTurn(playerId)){
-            var topCard = this.state.pileOfCards[0];
+            var topCard = this.state.pileOfCards.getLast();
             var playerCards = players[playerId-1].getAllCards();
             if (!this.logic.canPlayerPlay(topCard, playerCards)){
-                //loop for taking cards (2plus)
-                var card = this.state.deck.getCard();
-                players[playerId-1].addCard(card);
-                this.state.needReset = true;
-                this.setState({
-                    Players : players
-                })
+                for(var i = 0; i < this.cardsToTake; i++){
+                    players[playerId-1].addCard(this.state.deck.getCard());
+                }
+                let newState = {
+                    Players : players,
+                }
+                this.needReset = true;
                 if (!(players[playerId-1] instanceof Computer)){
-                    this.switchTurns();
+                    this.setState(newState, () => {this.switchTurns()})
+                } else {
+                    this.setState(newState);
                 }
             } else {
                 alert("You Can Play !");
-                //TODO :: tell player he can play !
             }
         } else {
             alert("Not your turn...");
@@ -153,31 +256,32 @@ export default class App extends React.Component {
     }
 
     onClickCard(event) {
+        if (this.checkIfGameWasPaused(event)){
+            return;
+        }
         var color = event.target.getAttribute("color");
         var name = event.target.getAttribute("name");
         var playerId = parseInt(event.target.getAttribute("ownerid"));
         var card = this.state.Players[playerId - 1].getCardFromPackByNameAndColor(name, color);
         var cards;
-
+        let playedTaki;
         if (this.isPlayerTurn(playerId)) {
-            var topCard = this.state.pileOfCards[0];
+            var topCard = this.state.pileOfCards.getLast();
             if (this.logic.isMoveValid(topCard, card)) {
-                this.logic.cardPlayed(card, this);
+                playedTaki = this.logic.cardPlayed(card, this);
                 if (card.name == 'changecolor') {
                     return; //once color will be picked game will continue
                 }
-                //TODO:: MAKE THE FUNCTION BELLOW WORK IN REACT
-                //this.moveCardFromPlayerToPile(playerId, card);
-                if (this.state.takiMode) {
-                    cards = this.Players[playerId - 1].getAllCards();
-                    topCard = this.state.pileOfCards[0];
+                this.moveCardFromPlayerToPile(playerId, card);
+                if (this.state.takiMode || playedTaki) {
+                    cards = this.state.Players[playerId - 1].getAllCards();
+                    topCard = this.state.pileOfCards.getLast();
                     if (this.logic.canPlayerPlayTaki(cards, topCard.color)) {
+                        this.resetTurn();
                         return; //let player continue taki...
                     } else {
-                        this.setTakiMode(false);
-                        this.setState({
-                            endTurnButton: "none"
-                        })
+                        let newState = this.getTakiModeState(false);
+                        this.setState(newState);
                     }
                 }
                 this.switchTurns();
@@ -190,12 +294,41 @@ export default class App extends React.Component {
         }
     }
 
-    setTakiMode(value, color){
+    moveCardFromPlayerToPile(playerID, card){
+        var filtering = this.state.activeFilter;
+        if(this.state.activeFilter) {
+            filtering = false;
+        }
+        if (playerID != null){
+            if (!(this.state.Players[playerID-1] instanceof Computer)){ //computer remove cards on its own
+                this.state.Players[this.state.currentPlayerIDTurn-1].removeCard(card);
+            }
+        }
+        var pile = this.state.pileOfCards;
+        pile.push(card);
         this.setState({
-            takiMode: value
+                pileOfCards: pile,
+                activeFilter: filtering
         })
-        //TODO:: change the command bellow to work in react
-        //this.UI.setTakiMode(this.endTurnButtonClick.bind(this),value, color, );
+    }
+
+    getTakiModeState(value, color){
+        let display = 'flex';
+        if (!value){
+            color = "none";
+            display = "none";
+        }
+        let newState = {
+            takiMode: value,
+            takiModeColor: color,
+            endTurnButton: display
+        };
+        return newState;
+    }
+
+    endTurnHandleClick(){
+        let newState = this.getTakiModeState(false);
+        this.setState(newState, () => {this.switchTurns()});
     }
 
     isPlayerTurn(playerID) {
@@ -204,47 +337,146 @@ export default class App extends React.Component {
     
     newTurn() {
         var card = this.state.pileOfCards.pop();
-        card.isActive = false;
-        this.pileOfCards.push(card);
+        this.state.pileOfCards.push(card);
         this.playerFinishedTurn();
-        this.setTakiMode(false);
-        this.setState({
-            startTurnTime: Date.now()
-        })
-        //todo : this.UI.updateStats(this.Players[0].getStat());
+        let newState = this.getTakiModeState(false);
+        newState['startTurnTime'] = Date.now();
+        this.setState(newState);
+    }
+
+    playerFinishedTurn(){
+        this.state.Players[this.state.currentPlayerIDTurn-1].updateStats(Date.now() - this.state.startTurnTime)
+        if (this.state.Players[this.state.currentPlayerIDTurn-1].isLastCard())
+            this.state.Players[this.state.currentPlayerIDTurn-1].increaseLastCardCounter();
     }
 
     resetTurn() {
         this.cardsToTake = 1;
         this.turnsToMove = 1;
+        this.state.pileOfCards.getLast().isActive = false;
+        this.needReset = false;
     }
 
+    playerSurrender(){
+        if (this.gameEnd){
+            return;
+        }
+        this.gameEnd = true;
+        this.setState({
+            winnerId: 2,
+            gamePaused: true,
+            scoreBoardDisplay: 'inline-block',
+            scorePopupContainerDisplay: 'block',
+        })
+    }
+    copyState(){
+        var turn={};
+        turn.numOfPlayers= this.state.numOfPlayers;
+        turn.numOfBots = this.state.numOfBots;
+        turn.startTurnTime= this.state.startTurnTime;
+        turn.Players =this.setPlayers();
+        for (let i = 0; i < this.state.numOfPlayers + this.state.numOfBots; i++) {
+            for (let j = 0; j < this.state.Players[i].cards.length; j++) {
+                turn.Players[i].cards.push(this.state.Players[i].cards[j]);
+            }
+        }
+        
+        turn.currentPlayerIDTurn= this.state.currentPlayerIDTurn;
+        turn.deck= this.state.deck;
+        turn.pileOfCards=[];
+        for (let index = 0; index < this.state.pileOfCards.length; index++) {
+            turn.pileOfCards.push(this.state.pileOfCards[index]);
+        }
+        //turn.resetTimer = this.resetTimer;
+        return turn;
+    } 
+
     switchTurns() {
+        this.history.push(this.copyState());
+        if (this.state.gamePaused){
+            return;
+        }
         var winnerId = this.checkIfAnyWinners();
         if (winnerId != 0) {
-            // todo: this.UI.updateScoreBoard(this.Players[0].getStat(), this.Players[1].getStat());
-            // todo: this.UI.showScoreBoard(winnerId);
+            this.gameEnd = true;
             this.setState({
-                gamePaused: true
+                winnerId: winnerId,
+                gamePaused: true,
+                scoreBoardDisplay: 'inline-block',
+                scorePopupContainerDisplay: 'block',
             })
             return;
         } else {
             this.newTurn();
-            if (this.state.needReset) {
+            if (this.needReset) {
                 this.resetTurn();
             }
             var playerID = ((this.state.currentPlayerIDTurn - 1 + this.turnsToMove) % (this.state.numOfPlayers + this.state.numOfBots)) + 1;
-        
-            this.setState({
-                currentPlayerIDTurn: playerID
-            })
-        
-            //todo : this.UI.changePlayerImg(playerID);
+
             if (this.state.Players[playerID - 1] instanceof Computer) {
-                //todo: setTimeout(this.makeBotPlay.bind(this), 850);
+                this.setState({
+                    currentPlayerIDTurn: playerID
+                }, () => setTimeout(this.makeBotPlay.bind(this), 200))
+            }else {
+                this.setState({
+                    currentPlayerIDTurn: playerID
+                })
             }
         }
     }
+    displayTurn(i){
+        let turn = this.history[i];
+        this.setState({
+            numOfPlayers: turn.numOfPlayers,
+            numOfBots: turn.numOfBots,
+            startTurnTime: turn.startTurnTime,
+            Players: turn.Players,
+            currentPlayerIDTurn: turn.currentPlayerIDTurn,
+            deck: turn.deck,
+            pileOfCards: turn.pileOfCards,
+            //resetTimer: turn.resetTimer
+        })
+    }
+
+    makeBotPlay(){
+        if (this.isStarted){
+        var card = this.state.pileOfCards.getLast();
+        var color = card.color;
+        var resultArray = this.state.Players[this.state.currentPlayerIDTurn-1].play(card);
+        if (resultArray == 'takeCard'){
+            this.onTakeCard(this.state.currentPlayerIDTurn);
+        } else {
+            //process cards into pile
+            if (Array.isArray(resultArray)){
+                card = resultArray.pop()
+                if (card.name == 'changecolor'){
+                    this.moveCardFromPlayerToPile(this.state.currentPlayerIDTurn, card);
+                    card = this.state.pileOfCards.getLast();
+                    card.color = resultArray.pop();
+                } else {
+                    //card is taki
+                    this.moveCardFromPlayerToPile(this.state.currentPlayerIDTurn, card);
+                    let length = resultArray.length;
+                    for (var i = 0; i < length; i++){
+                        card = resultArray.pop();
+                        this.moveCardFromPlayerToPile(this.state.currentPlayerIDTurn, card);
+                    }
+                    //make last card count
+                    card = this.state.pileOfCards.getLast();
+                    if (card.name != 'taki'){
+                        this.logic.cardPlayed(card, this);
+                    }
+                }
+            } else if (resultArray instanceof Card){
+                //only one card
+                card = resultArray;
+                this.logic.cardPlayed(card, this);
+                this.moveCardFromPlayerToPile(this.state.currentPlayerIDTurn, card);
+            }
+        }
+        this.switchTurns();
+    }
+}
 
     checkIfAnyWinners() {
         for (var i = 0; i < this.state.Players.length; i++) {
@@ -255,14 +487,96 @@ export default class App extends React.Component {
         return 0;
     }
 
+    getPlayerStats(){
+        let statsArray = [];
+        for (var i = 0; i< this.state.Players.length; i++){
+            statsArray.push(this.state.Players[i].getStat());
+        }
+        return statsArray;
+    }
+
+    colorButtonClick(event) {
+        var color = event.target.id.slice(0,-7);
+        var card = this.state.Players[this.state.currentPlayerIDTurn-1].getCardFromPackByNameAndColor('changecolor','colorful');
+        card.color = color;
+        this.moveCardFromPlayerToPile(this.state.currentPlayerIDTurn, card);
+        this.setState({
+            cardColorFilter: color,
+            activeFilter: true,
+            gamePaused: false,
+            colorPopupDisplay: 'none',
+            colorPopupContainerDisplay: 'none',
+        }, () => {this.switchTurns()})
+    }
+    prevClick(){
+        if (this.state.turnToDisplay>0){
+            let numTurn = this.state.turnToDisplay - 1;
+            this.setState({
+                turnToDisplay: numTurn
+            })
+            this.displayTurn(numTurn);
+        }else{
+            alert("this is the first turn... cant go more back");
+        }
+    }
+    nextClick() {
+        if (this.state.turnToDisplay < this.history.length) {
+            let numTurn = this.state.turnToDisplay +1;
+            this.setState({
+                turnToDisplay: numTurn
+            })
+            this.displayTurn(numTurn);
+        } else {
+            alert("this is the last turn... cant go furthermore");
+        }
+    }
+    showReplay(){
+        this.setState({
+            replayDisplay:"flex",
+            scorePopupContainerDisplay:"none",
+            scoreBoardDisplay: "none", 
+        }, () => {this.displayTurn(0)});
+    }
+
+    endReplayHandleClick(){
+        this.isStarted = false;
+        let newState = this.resetGame();
+        newState['replayDisplay'] = 'none';
+        this.setState(newState);
+    }
+
     render() {
         return (
             <Board 
                 Players = {this.state.Players}
                 Deck = {this.state.Deck}
                 startGame = {this.startGame.bind(this)}
+                endGame = {this.playerSurrender.bind(this)}
                 handleClickCard={this.onClickCard.bind(this)}
+                handleTakeCard={this.onTakeCard.bind(this)}
                 pileOfCards = {this.state.pileOfCards}
+                pileOfCardsColor = {this.state.takiModeColor}
+                currentPlayer = {this.state.currentPlayerIDTurn}
+                endTurnButton = {this.state.endTurnButton}
+                endTurnHandleClick = {this.endTurnHandleClick.bind(this)}
+                scoreBoardDisplay = {this.state.scoreBoardDisplay}
+                scoreContainerDisplay = {this.state.scorePopupContainerDisplay}
+                showReplay={this.showReplay.bind(this)}
+                resetGame = {this.resetAndStartNewGame.bind(this)}
+                stopTimer = {this.gameEnd}
+                restartTimer = {this.resetTimer}
+                getPlayerStats = {this.getPlayerStats.bind(this)}
+                winner = {this.state.winnerId}
+                colorPopupStyle = {this.state.colorPopupDisplay}
+                colorContainerStyle = {this.state.colorPopupContainerDisplay}
+                handleColorPopupClick = {this.colorButtonClick.bind(this)}
+                cardColorFilter = {this.state.cardColorFilter}
+                cardActiveFilter = {this.state.activeFilter}
+                replayDisplay={this.state.replayDisplay}
+                prevClick={this.prevClick.bind(this)}
+                nextClick={this.nextClick.bind(this)}
+                endReplayHandleClick = {this.endReplayHandleClick.bind(this)}
+                numOfTurn={this.state.turnToDisplay}
             />
         );
     }

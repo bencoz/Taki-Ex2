@@ -3,11 +3,6 @@ export default class Computer extends Player {
     constructor(id){
         super(id)
     }
-
-    randColor(){
-        var num = Math.floor(Math.random() * Math.floor(4)) + 1;
-        return this.ColorEnum[num];
-    }
 }
 
 Computer.prototype = Object.create(Player.prototype);
@@ -57,6 +52,7 @@ Computer.prototype.play = function(topCard){
             arrayresult.push(cards[i]);
         }
         this.removeCards(cards);
+        card.color = color;
         arrayresult.push(card);
         return arrayresult;
     }
@@ -74,7 +70,17 @@ Computer.prototype.play = function(topCard){
     card = this.getCardFromPackByColor(topCard.color)
     if (card != null){
         this.removeCard(card);
-        return card;
+        if (card.name == 'taki'){
+            var cards = this.getAllCardsByColor(card.color);
+            for (var i = 0; i < cards.length; i++){
+                arrayresult.push(cards[i]);
+            }
+            this.removeCards(cards);
+            arrayresult.push(card);
+            return arrayresult;
+        } else {
+            return card;
+        }
     }
     card = this.getCardFromPackByName(topCard.name)
     if (card != null){
@@ -83,5 +89,4 @@ Computer.prototype.play = function(topCard){
     }
 
     return 'takeCard';
-}
-
+}    

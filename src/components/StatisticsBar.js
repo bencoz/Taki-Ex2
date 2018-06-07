@@ -3,30 +3,57 @@ import React from "react";
 export default class StatisticsBar extends React.Component {
     constructor(props) {
         super(props);
-        this.ms =0;
-        this.second =0;
-        this.minute=0;
-
+        this.ms = 0;
+        this.second = 0;
+        this.minute = 0;
         this.state = {
             timer: "00:00",
             avgMoveTime: "00:00",
             lastCard:"0",
             moves:"0"
-
         };
     }
-    componentDidMount() {
+
+    stopTimer(){
+        clearInterval(this.timerID);
+    }
+
+    startTimer(){
         this.timerID = setInterval(
             () => this.tick(),
             10
         );
     }
 
-    componentWillUnmount() {
-        clearInterval(this.timerID);
+    restartTimer(){
+        this.ms = 0;
+        this.second = 0;
+        this.minute = 0;
+        this.setState({
+            timer: "00:00",
+        }, this.startTimer);
     }
 
-    
+    componentDidMount() {
+        this.startTimer();
+    }
+
+    componentWillReceiveProps(nextProps){
+        if (nextProps.stopTimerSignal && !nextProps.restartTimerSignal){
+            this.stopTimer();
+        }
+        if (nextProps.restartTimerSignal){
+            this.restartTimer();
+        }
+        let playersStats = nextProps.getPlayerStats();
+        let newState = {
+            avgMoveTime: playersStats[0].avgTurnTime.min + ":" + playersStats[0].avgTurnTime.sec + ":" + ((playersStats[0].avgTurnTime.ms).toString()).slice(0, 2),
+            moves: playersStats[0].numOfTurnsPlayed,
+            lastCard: playersStats[0].numOfLastCard
+        }
+        this.setState(newState);
+    }
+        
     tick() {
         let newTimer = this.minute + "mins " + this.second + "secs";
         if (this.ms == 100) {

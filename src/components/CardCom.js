@@ -1,17 +1,23 @@
 import React from "react";
 
-export default class CardCom extends React.Component {
+export default class Replay extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {
-        };
-    }
+    };
 
     render() {
-        var url = "url(./images/cards/" + this.props.name + "_" + this.props.color + ".png)";
-        let newStyle = {
-            backgroundImage: url
+        let url; 
+        if (this.props.hideCard){
+            url = "url(./images/cards/card_back.png)";
+        }else{
+            url = "url(./images/cards/" + this.props.name + "_" + this.props.color + ".png)";
         }
+        
+        let newStyle = {backgroundImage: url};
+        if (this.props.inPile){
+            Object.assign(newStyle, this.props.inPileStyle);
+        }
+         
         return (
             <div className="card"
                 style={newStyle}
@@ -20,7 +26,6 @@ export default class CardCom extends React.Component {
                 isspecial={this.props.isSpecial}
                 ownerid={this.props.ownerID}
                 onClick={this.props.handleClickCard} >
-            
             </div>
         );
     }

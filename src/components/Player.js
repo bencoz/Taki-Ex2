@@ -6,8 +6,14 @@ export default class Player{
         this.cards = [];
         this.stats = new Stats();
         this.ColorEnum = Object.freeze({ 1: 'blue', 2: 'green', 3: 'yellow', 4: 'red' })
-        
     }
+    resetStats(){
+        this.stats = new Stats();
+    }
+}
+Player.prototype.randColor = function(){
+    var num = Math.floor(Math.random() * Math.floor(4)) + 1;
+    return this.ColorEnum[num];
 }
 Player.prototype.updateStats = function(time){
     this.stats.increaseTurns();
@@ -37,9 +43,18 @@ Player.prototype.removeCard =  function(card){
     this.cards.splice(index, 1);
 }
 Player.prototype.removeCards =  function(cards){
-    for (var i = 0; i < cards.length; i++){
+    var len = cards.length;
+    for (var i = 0; i < len; i++){
         this.removeCard(cards[i]);
     }
+}
+Player.prototype.removeAllCards = function(){
+    let returnValue = [];
+    var len = this.cards.length;
+    for (var i = 0; i < len; i++){
+        returnValue.push(this.cards.pop());
+    }
+    return returnValue;
 }
 Player.prototype.getCard = function(cardToSearch){
     var foundCard = null;

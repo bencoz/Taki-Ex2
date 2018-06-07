@@ -16,7 +16,7 @@ export default class Stats{
     calcAvgTurnTime(){
         this.avgTurnTime.min = Math.floor(this.time/this.numOfTurnsPlayed/60000);
         this.avgTurnTime.sec = Math.floor(this.time/this.numOfTurnsPlayed/1000);
-        this.avgTurnTime.ms = this.time-(this.avgTurnTime.sec*1000);
+        this.avgTurnTime.ms = this.time - (this.avgTurnTime.sec * 1000);
     }
 }
 
