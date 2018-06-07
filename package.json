@@ -7,7 +7,7 @@
     "build": "webpack",
     "build-watch": "webpack --watch"
   },
-  "author": "Spivak Ofer",
+  "author": "Ben Cohen & Kim Usher",
   "license": "ISC",
   "devDependencies": {
     "babel-core": "^6.26.0",
@@ -15,8 +15,9 @@
     "babel-preset-env": "^1.6.1",
     "babel-preset-react": "^6.24.1",
     "css-loader": "^0.28.7",
-    "file-loader": "^1.1.5",
+    "file-loader": "^1.1.11",
     "style-loader": "^0.19.0",
+    "ttf-loader": "^1.0.2",
     "webpack": "^3.10.0"
   },
   "dependencies": {
