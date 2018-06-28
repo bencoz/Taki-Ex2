@@ -1,5 +1,5 @@
 # Taki Game (Web School Project)
-JavaScript ES6 with React - Web Card Game For 1 User.
+JavaScript ES6 using React - Web Card Game For 1 User.
 ## Rules:
 The top card in the pile dictates which cards are allowed to be placed,
 i.e All cards in the same color or the same card in a different color.
